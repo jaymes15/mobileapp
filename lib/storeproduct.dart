@@ -8,7 +8,7 @@ import 'package:oja_barcode/addstore.dart';
 import 'package:oja_barcode/addproduct.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:oja_barcode/producttostore.dart';
-
+import 'package:oja_barcode/messagepage.dart';
 
 class storeproduct extends StatefulWidget{
   var storedata;
@@ -85,7 +85,7 @@ class _storeproductState extends State<storeproduct> {
   }
 
   Future searchBarcode(String scan) async{
-    var url = "http://ojaapi.pythonanywhere.com/searchproductbybarcode/"+scan;
+    var url = "http://ojaapi.pythonanywhere.com/searchproductbybarcode/${scan}/${storedata['storeid']}";
     var response = await http.get(Uri.encodeFull(url),
       headers: {
         "Content-type": "application/json",
@@ -102,12 +102,23 @@ class _storeproductState extends State<storeproduct> {
     }
     else{
 
+              if(convertdatatojson['message'] == "product exist in store"){
+                 message = convertdatatojson['message'];
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => messagepage(message:message),
+                ));
 
-            var data = {"token":storedata['token'],"storeid":"${storedata['storeid']}" };
-            print(data);
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => producttostore(storedata:data,res:convertdatatojson),
-            ));
+              }
+              else{
+
+                var data = {"token":storedata['token'],"storeid":"${storedata['storeid']}" };
+                print(data);
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => producttostore(storedata:data,res:convertdatatojson),
+                ));
+
+              }
+
 
 
     }
@@ -149,7 +160,7 @@ class _storeproductState extends State<storeproduct> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      Text(message),
+
 
 
                       Card(
