@@ -85,7 +85,7 @@ class _storeproductState extends State<storeproduct> {
   }
 
   Future searchBarcode(String scan) async{
-    var url = "http://ojaapi.pythonanywhere.com/searchproductbybarcode/${scan}/${storedata['storeid']}";
+    var url = "http://ojaapi.pythonanywhere.com/searchproductbybarcode/${scan}/4";
     var response = await http.get(Uri.encodeFull(url),
       headers: {
         "Content-type": "application/json",
@@ -146,6 +146,7 @@ class _storeproductState extends State<storeproduct> {
               Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => addproduct(storedata:data),
               ));
+
 
             },
             icon: Icon(Icons.add),

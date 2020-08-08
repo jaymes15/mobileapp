@@ -32,13 +32,15 @@ class _producttostoreState extends State<producttostore> {
   String unit;
   String regular_price;
 
-var scanerror;
+var scanerror = "";
 
 
 
   String url = "http://ojaapi.pythonanywhere.com/addproducttomerchant/";
 
   void addnewproducttostore() async{
+
+    try{
 
        var response = await http.post("http://ojaapi.pythonanywhere.com/addproducttomerchant/",
          headers: {
@@ -47,15 +49,15 @@ var scanerror;
          },
          body: jsonEncode({
            "merchant_id": int.parse(storedata['storeid']),
-           "category_id": int.parse(category),
+           "category_id": res['category_id'],
            "brand": "${res['brand']}",
            "barcode": "${res['barcode']}",
            "name": "${res['name']}",
            "short_description": "${res['short_description']}",
-           "stock_quantity": int.parse(stock_quantity),
-           "min_stock_quantity": int.parse(min_stock_quantity),
-           "weight": weight,
-           "unit": int.parse(unit),
+           "stock_quantity": 1,
+           "min_stock_quantity": 1,
+           "weight": res['weight'],
+           "unit": res['unit'],
            "regular_price": int.parse(regular_price)
          }
          ),
@@ -64,7 +66,11 @@ var scanerror;
        Navigator.of(context).pushReplacement(MaterialPageRoute(
          builder: (context) => storeproduct(storedata:data),
        ));
-
+  }catch(ex){
+    setState(() {
+    scanerror = "Regular Price Can Not Be Empty";
+    });
+    }
 
 
 
@@ -123,157 +129,7 @@ var scanerror;
         padding: EdgeInsets.all(20.0),
         child:ListView(
           children: <Widget>[
-            Text("${res['weight']}"),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                  vertical: 15.0,
-                  horizontal: 0.0
-              ),
-              child:Expanded(
-                child: DropdownButtonHideUnderline(
-                  child: ButtonTheme(
-                    alignedDropdown: true,
-                    child:DropdownButton<String>(
-                      hint: new Text("Select Category"),
-                      value: category,
-                      isDense: true,
-                      iconSize: 30,
-                      icon: (null),
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontSize: 16,
-                      ),
-                      onChanged: (String newValue) {
-                        setState(() {
-                          category = newValue;
-                        });
-
-                      },
-                      items:categories?.map((category) {
-                        return new DropdownMenuItem<String>(
-                          value: category['id'].toString(),
-                          child: new Text(category['name'],
-                              style: new TextStyle(color: Colors.black)),
-                        );
-                      })?.toList() ??
-                          [],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                  vertical: 15.0,
-                  horizontal: 0.0
-              ),
-              child: TextField(
-                autocorrect:true,
-                autofocus:true,
-
-                onChanged:(_val){
-
-                  stock_quantity = _val;
-
-
-                },
-                style: TextStyle(
-                  fontSize:20.0,
-                ),
-                decoration: InputDecoration(
-                    hintText:"Stock Quantity",
-                    border: InputBorder.none,
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    contentPadding: EdgeInsets.all(15.0)
-                ),
-
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                  vertical: 15.0,
-                  horizontal: 0.0
-              ),
-              child: TextField(
-                autocorrect:true,
-                autofocus:true,
-
-                onChanged:(_val){
-
-                  weight = _val;
-
-
-                },
-                style: TextStyle(
-                  fontSize:20.0,
-                ),
-                decoration: InputDecoration(
-                    hintText:"Weight",
-                    border: InputBorder.none,
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    contentPadding: EdgeInsets.all(15.0)
-                ),
-
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                  vertical: 15.0,
-                  horizontal: 0.0
-              ),
-              child: TextField(
-                autocorrect:true,
-                autofocus:true,
-
-                onChanged:(_val){
-
-                  min_stock_quantity = _val;
-
-
-                },
-                style: TextStyle(
-                  fontSize:20.0,
-                ),
-                decoration: InputDecoration(
-                    hintText:"Min Stock Quantity",
-                    border: InputBorder.none,
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    contentPadding: EdgeInsets.all(15.0)
-                ),
-
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                  vertical: 15.0,
-                  horizontal: 0.0
-              ),
-              child: TextField(
-                autocorrect:true,
-                autofocus:true,
-
-                onChanged:(_val){
-
-                  unit = _val;
-
-
-                },
-                style: TextStyle(
-                  fontSize:20.0,
-                ),
-                decoration: InputDecoration(
-                    hintText:"Unit",
-                    border: InputBorder.none,
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    contentPadding: EdgeInsets.all(15.0)
-                ),
-
-              ),
-            ),
+            Text("${scanerror}"),
             Padding(
               padding: EdgeInsets.symmetric(
                   vertical: 15.0,

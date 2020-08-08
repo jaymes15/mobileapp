@@ -31,37 +31,45 @@ class _addproductState extends State<addproduct> {
   String regular_price;
 
 
-
+var error = "Please Fill All Fields";
 
 
   String url = "http://ojaapi.pythonanywhere.com/addproducttomerchant/";
 
   void addnewproducttostore() async{
-
-    var response = await http.post(Uri.encodeFull(url),
-      headers: {
-        "Content-type": "application/json",
-        "Authorization": "Token " + storedata['token']
-      },
-      body: jsonEncode({
-        "merchant_id": int.parse(storedata['storeid']),
-        "category_id": int.parse(category),
-        "brand": "${brand}",
-        "barcode": "${barcode}",
-        "name": "${name}",
-        "short_description": "${short_description}",
-        "stock_quantity": int.parse(stock_quantity),
-        "min_stock_quantity": int.parse(min_stock_quantity),
-        "weight": int.parse(weight),
-        "unit": int.parse(unit),
-        "regular_price": int.parse(regular_price)
-      }
-      ),
-    );
-    var data = {"token":storedata['token'],"storeid":"${storedata['storeid']}"};
-    Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (context) => storeproduct(storedata:data),
-    ));
+try {
+  var response = await http.post(Uri.encodeFull(url),
+    headers: {
+      "Content-type": "application/json",
+      "Authorization": "Token " + storedata['token']
+    },
+    body: jsonEncode({
+      "merchant_id": int.parse(storedata['storeid']),
+      "category_id": int.parse(category),
+      "brand": "${brand}",
+      "barcode": "${barcode}",
+      "name": "${name}",
+      "short_description": "${short_description}",
+      "stock_quantity": int.parse(stock_quantity),
+      "min_stock_quantity": int.parse(min_stock_quantity),
+      "weight": int.parse(weight),
+      "unit": int.parse(unit),
+      "regular_price": int.parse(regular_price)
+    }
+    ),
+  );
+  var data = {
+    "token": storedata['token'],
+    "storeid": "${storedata['storeid']}"
+  };
+  Navigator.of(context).pushReplacement(MaterialPageRoute(
+    builder: (context) => storeproduct(storedata: data),
+  ));
+}catch(ex){
+  setState(() {
+    error = "${ex}";
+  });
+}
 
   }
 
@@ -114,7 +122,9 @@ class _addproductState extends State<addproduct> {
         padding: EdgeInsets.all(20.0),
         child:ListView(
           children: <Widget>[
-            Text(""),
+            Center(
+              child:  Text("${error}"),
+            ),
             TextField(
               autocorrect:true,
               autofocus:true,

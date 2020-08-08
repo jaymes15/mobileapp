@@ -17,17 +17,17 @@ class _addstoreState extends State<addstore> {
 
 
   String token;
-  String storename;
-  String storemail;
-  String phonenum;
-  String contactname;
-  String address;
-  String city;
-  String state;
-  String zip;
-  String country;
-  String countrycode;
-
+  String storename = "";
+  String storemail = "";
+  String phonenum = "";
+  String contactname = "";
+  String address = "";
+  String city = "";
+  String state = "";
+  String zip = "";
+  String country = "";
+  String countrycode = "";
+var error = "";
   _addstoreState(this.token);
   String url = "http://ojaapi.pythonanywhere.com/getallmerchants/";
 
@@ -62,6 +62,14 @@ class _addstoreState extends State<addstore> {
 
     return "Success";
   }
+
+
+  void displayerror(){
+    print("hello");
+    setState(() {
+      error = "Please Fill All Fields";
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,7 +91,10 @@ class _addstoreState extends State<addstore> {
         padding: EdgeInsets.all(20.0),
         child:ListView(
           children: <Widget>[
-            Text(""),
+            Center(
+              child:  Text("Please Fill All Fields"),
+            ),
+
             TextField(
               autocorrect:true,
               autofocus:true,
@@ -371,6 +382,7 @@ class _addstoreState extends State<addstore> {
                   ) {
                     addnewstoredata();
                   }else{
+
 
                   }
                 },
