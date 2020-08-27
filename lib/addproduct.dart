@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:oja_barcode/stores.dart';
 import 'package:oja_barcode/storeproduct.dart';
 
+import 'messagepage.dart';
+
 class addproduct extends StatefulWidget{
   var storedata;
   addproduct({ Key key,@required this.storedata}) : super(key : key);
@@ -52,9 +54,9 @@ try {
       "short_description": "${short_description}",
       "stock_quantity": int.parse(stock_quantity),
       "min_stock_quantity": int.parse(min_stock_quantity),
-      "weight": int.parse(weight),
+      "weight": double.parse(weight),
       "unit": int.parse(unit),
-      "regular_price": int.parse(regular_price)
+      "regular_price": double.parse(regular_price)
     }
     ),
   );
@@ -71,6 +73,37 @@ try {
   });
 }
 
+  }
+
+
+  Future searchBarcode(String scan) async{
+    var url = "http://ojaapi.pythonanywhere.com/searchproductbybarcode/${scan}/${storedata['storeid']}";
+    var response = await http.get(Uri.encodeFull(url),
+      headers: {
+        "Content-type": "application/json",
+        "Authorization": "Token " + storedata['token']
+      },
+    );
+
+    var convertdatatojson = jsonDecode(response.body);
+    if(convertdatatojson.isEmpty){
+         addnewproducttostore();
+    }
+    else{
+
+      if(convertdatatojson['message'] == "product exist in store"){
+        var message = "product exist in store";
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => messagepage(message:message),
+        ));
+
+      }else{
+        addnewproducttostore();
+      }
+
+
+
+    }
   }
 
   List categories;
@@ -151,35 +184,33 @@ try {
                   vertical: 15.0,
                   horizontal: 0.0
               ),
-              child:Expanded(
-                child: DropdownButtonHideUnderline(
-                  child: ButtonTheme(
-                    alignedDropdown: true,
-                    child:DropdownButton<String>(
-                      hint: new Text("Select Category"),
-                      value: category,
-                      isDense: true,
-                      iconSize: 30,
-                      icon: (null),
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontSize: 16,
-                      ),
-                      onChanged: (String newValue) {
-                        setState(() {
-                          category = newValue;
-                        });
-
-                      },
-                      items:categories?.map((category) {
-                        return new DropdownMenuItem<String>(
-                          value: category['id'].toString(),
-                          child: new Text(category['name'],
-                              style: new TextStyle(color: Colors.black)),
-                        );
-                      })?.toList() ??
-                          [],
+              child:DropdownButtonHideUnderline(
+                child: ButtonTheme(
+                  alignedDropdown: true,
+                  child:DropdownButton<String>(
+                    hint: new Text("Select Category"),
+                    value: category,
+                    isDense: true,
+                    iconSize: 30,
+                    icon: (null),
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontSize: 16,
                     ),
+                    onChanged: (String newValue) {
+                      setState(() {
+                        category = newValue;
+                      });
+
+                    },
+                    items:categories?.map((category) {
+                      return new DropdownMenuItem<String>(
+                        value: category['id'].toString(),
+                        child: new Text(category['name'],
+                            style: new TextStyle(color: Colors.black)),
+                      );
+                    })?.toList() ??
+                        [],
                   ),
                 ),
               ),
@@ -389,8 +420,11 @@ try {
               ),
               child: MaterialButton(
                 onPressed: (){
+                  if(barcode != null){
+                    searchBarcode(barcode);
+                  }
 
-                  addnewproducttostore();
+
 
                 },
                 color: Colors.indigoAccent,

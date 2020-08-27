@@ -52,9 +52,9 @@ class _addproducttostoreState extends State<addproducttostore> {
         "short_description": "${short_description}",
         "stock_quantity": int.parse(stock_quantity),
         "min_stock_quantity": int.parse(min_stock_quantity),
-        "weight": int.parse(weight),
+        "weight": double.parse(weight),
         "unit": int.parse(unit),
-        "regular_price": int.parse(regular_price)
+        "regular_price": double.parse(regular_price)
       }
       ),
     );
@@ -141,35 +141,33 @@ class _addproducttostoreState extends State<addproducttostore> {
                   vertical: 15.0,
                   horizontal: 0.0
               ),
-              child:Expanded(
-                child: DropdownButtonHideUnderline(
-                  child: ButtonTheme(
-                    alignedDropdown: true,
-                    child:DropdownButton<String>(
-                      hint: new Text("Select Category"),
-                      value: category,
-                      isDense: true,
-                      iconSize: 30,
-                      icon: (null),
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontSize: 16,
-                      ),
-                      onChanged: (String newValue) {
-                        setState(() {
-                          category = newValue;
-                        });
-
-                      },
-                      items:categories?.map((category) {
-                        return new DropdownMenuItem<String>(
-                          value: category['id'].toString(),
-                          child: new Text(category['name'],
-                              style: new TextStyle(color: Colors.black)),
-                        );
-                      })?.toList() ??
-                          [],
+              child:DropdownButtonHideUnderline(
+                child: ButtonTheme(
+                  alignedDropdown: true,
+                  child:DropdownButton<String>(
+                    hint: new Text("Select Category"),
+                    value: category,
+                    isDense: true,
+                    iconSize: 30,
+                    icon: (null),
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontSize: 16,
                     ),
+                    onChanged: (String newValue) {
+                      setState(() {
+                        category = newValue;
+                      });
+
+                    },
+                    items:categories?.map((category) {
+                      return new DropdownMenuItem<String>(
+                        value: category['id'].toString(),
+                        child: new Text(category['name'],
+                            style: new TextStyle(color: Colors.black)),
+                      );
+                    })?.toList() ??
+                        [],
                   ),
                 ),
               ),

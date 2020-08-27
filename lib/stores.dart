@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:oja_barcode/addstore.dart';
 import 'package:oja_barcode/storeproduct.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 
 class store extends StatefulWidget{
@@ -46,6 +47,38 @@ class _storeState extends State<store> {
     return "Success";
   }
 
+  Future<void> deleteproduct(int storeid) async{
+
+    var url = "http://ojaapi.pythonanywhere.com/getmerchant/${storeid}";
+    var response = await http.delete(Uri.encodeFull(url),
+      headers: {
+        "Content-type": "application/json",
+        "Authorization": "Token " + token
+      },
+    );
+    getjsondata();
+    _onBasicAlertPressed(context);
+
+  }
+
+  _onBasicAlertPressed(context) {
+    Alert(
+        context: context,
+        title: "OJA",
+        desc: "You Have Successfully Deleted A Store.",
+      buttons: [
+        DialogButton(
+          child: Text(
+            "OKAY",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () => Navigator.pop(context),
+          width: 120,
+        )
+      ],
+    )
+        .show();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,20 +115,57 @@ class _storeState extends State<store> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
 
-                      Card(
-                        child: new InkWell(
-                          onTap:(){
-                            var storedata = {"token":token,"storeid":"${data[index]['id']}"};
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => storeproduct(storedata:storedata),
-                            ));
 
-                          },
-                          child: Container(
-                            child:Text(data[index]['name']),
-                            padding: EdgeInsets.all(20.0),
-                          ),
 
+                      GestureDetector(
+                        onTap:(){
+                                                var storedata = {"token":token,"storeid":"${data[index]['id']}"};
+                                                Navigator.of(context).push(MaterialPageRoute(
+                                                  builder: (context) => storeproduct(storedata:storedata),
+                                                ));
+
+                                              },
+                        child: Card(
+
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                ListTile(
+                                  title: Text(data[index]['name'],
+                                    style:TextStyle(
+
+                                      fontSize: 20.0,
+                                    ),
+                                  ),
+
+                                ),
+                                ButtonBar(
+                                  children: <Widget>[
+                                    FlatButton(
+                                      child: const Text('EDIT',
+                                        style:TextStyle(
+
+                                          fontSize: 20.0,
+                                        ),
+                                      ),
+                                      onPressed: () {/* ... */},
+                                    ),
+                                    FlatButton(
+                                      child: Text('DELETE',
+                                        style:TextStyle(
+                                          color:Colors.red,
+                                          fontSize: 20.0,
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        deleteproduct(data[index]['id']);
+
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            )
                         ),
                       ),
                     ],
@@ -107,3 +177,13 @@ class _storeState extends State<store> {
     );
   }
 }
+
+
+//child:Text(data[index]['name']),
+//onTap:(){
+//                            var storedata = {"token":token,"storeid":"${data[index]['id']}"};
+//                            Navigator.of(context).push(MaterialPageRoute(
+//                              builder: (context) => storeproduct(storedata:storedata),
+//                            ));
+//
+//                          },

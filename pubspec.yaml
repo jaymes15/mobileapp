@@ -32,6 +32,7 @@ dependencies:
   barcode_scan:
 
 dev_dependencies:
+  rflutter_alert: ^1.0.3
   flutter_test:
     sdk: flutter
 

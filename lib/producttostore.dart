@@ -58,7 +58,7 @@ var scanerror = "";
            "min_stock_quantity": 1,
            "weight": res['weight'],
            "unit": res['unit'],
-           "regular_price": int.parse(regular_price)
+           "regular_price": double.parse(regular_price)
          }
          ),
        );
