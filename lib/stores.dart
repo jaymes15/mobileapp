@@ -47,6 +47,10 @@ class _storeState extends State<store> {
     return "Success";
   }
 
+  void deletealert(int storeid){
+    _onDeleteAlertPressed(context,storeid);
+  }
+
   Future<void> deleteproduct(int storeid) async{
 
     var url = "http://ojaapi.pythonanywhere.com/getmerchant/${storeid}";
@@ -57,25 +61,40 @@ class _storeState extends State<store> {
       },
     );
     getjsondata();
-    _onBasicAlertPressed(context);
+    Navigator.pop(context);
 
   }
 
-  _onBasicAlertPressed(context) {
+
+  _onDeleteAlertPressed(context,int storeid) {
+
+
     Alert(
-        context: context,
-        title: "OJA",
-        desc: "You Have Successfully Deleted A Store.",
+      context: context,
+      title: "OJA",
+      desc: "Are You Sure You Want To Delete This Store.",
       buttons: [
         DialogButton(
           child: Text(
-            "OKAY",
+            "NO",
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
           onPressed: () => Navigator.pop(context),
           width: 120,
+        ),
+        DialogButton(
+          color: Colors.red,
+          child: Text(
+            "YES",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () async{
+            deleteproduct(storeid);
+          },
+          width: 120,
         )
       ],
+
     )
         .show();
   }
@@ -158,7 +177,7 @@ class _storeState extends State<store> {
                                         ),
                                       ),
                                       onPressed: () {
-                                        deleteproduct(data[index]['id']);
+                                        deletealert(data[index]['id']);
 
                                       },
                                     ),

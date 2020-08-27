@@ -127,6 +127,10 @@ class _storeproductState extends State<storeproduct> {
     }
   }
 
+  void deletealert(int productid){
+    _onDeleteAlertPressed(context,productid);
+  }
+
   Future<void> deleteproduct(int productid) async{
 
     var url = "http://ojaapi.pythonanywhere.com/deleteproduct/${productid}";
@@ -137,25 +141,41 @@ class _storeproductState extends State<storeproduct> {
       },
     );
     getstoreproductdata();
-    _onBasicAlertPressed(context);
+    Navigator.pop(context);
 
   }
 
-  _onBasicAlertPressed(context) {
+
+
+  _onDeleteAlertPressed(context,int productid) {
+
+
     Alert(
-        context: context,
-        title: "OJA",
-        desc: "You Have Successfully Deleted A Product.",
+      context: context,
+      title: "OJA",
+      desc: "Are You Sure You Want To Delete This Product.",
       buttons: [
         DialogButton(
           child: Text(
-            "OKAY",
+            "NO",
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
           onPressed: () => Navigator.pop(context),
           width: 120,
+        ),
+        DialogButton(
+          color: Colors.red,
+          child: Text(
+            "YES",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () async{
+            deleteproduct(productid);
+          },
+          width: 120,
         )
       ],
+
     )
         .show();
   }
@@ -288,7 +308,8 @@ class _storeproductState extends State<storeproduct> {
                                     ),
                                     onPressed: () {
 
-                                      deleteproduct(data[index]['id']);
+                                      deletealert(data[index]['id']);
+                                      //deleteproduct(data[index]['id']);
                                     },
                                   ),
                                 ],
