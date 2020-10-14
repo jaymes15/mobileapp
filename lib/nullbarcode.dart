@@ -7,31 +7,32 @@ import 'package:oja_barcode/stores.dart';
 import 'package:oja_barcode/storeproduct.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 
-class addproducttostore extends StatefulWidget{
+import 'messagepage.dart';
+
+class nullbarcode extends StatefulWidget{
   var storedata;
-  addproducttostore({ Key key,@required this.storedata}) : super(key : key);
+  nullbarcode({ Key key,@required this.storedata}) : super(key : key);
   @override
-  _addproducttostoreState createState() => _addproducttostoreState(storedata);
+  _nullbarcodeState createState() => _nullbarcodeState(storedata);
 
 }
 
 
-class _addproducttostoreState extends State<addproducttostore> {
+class _nullbarcodeState extends State<nullbarcode> {
 
   var storedata;
-  _addproducttostoreState(this.storedata);
+  _nullbarcodeState(this.storedata);
 
   String token;
-  String brand;
-  String barcode;
-  String name;
-  String short_description;
-  String stock_quantity;
-  String min_stock_quantity;
-  String weight;
-  String unit;
-  String regular_price;
-
+  var brand;
+  var barcode;
+  var name;
+  var short_description;
+  var stock_quantity;
+  var min_stock_quantity;
+  var weight;
+  var unit;
+  var regular_price;
 
   final TextEditingController _typeAheadController = TextEditingController();
 
@@ -39,37 +40,57 @@ class _addproducttostoreState extends State<addproducttostore> {
   TextEditingController();
 
 
+  var error = "Please Fill All Fields";
 
-  String url = "http://ojaapi.pythonanywhere.com/addproducttomerchant/";
 
-  void addnewproducttostore() async{
+  String url = "http://ojaapi.pythonanywhere.com/product/";
 
-    var response = await http.post(Uri.encodeFull(url),
-      headers: {
-        "Content-type": "application/json",
-        "Authorization": "Token " + storedata['token']
-      },
-      body: jsonEncode({
-        "merchant_id": int.parse(storedata['storeid']),
-        "category_id": int.parse(category),
-        "brand": "${brand}",
-        "barcode": "${storedata['barcode']}",
-        "name": "${name}",
-        "short_description": "${short_description}",
-        "stock_quantity": int.parse(stock_quantity),
-        "min_stock_quantity": 2,
-        "weight": double.parse(weight),
-        "unit": "${unit}",
-        "regular_price": double.parse(regular_price)
-      }
-      ),
-    );
-    var data = {"token":storedata['token'],"storeid":"${storedata['storeid']}"};
-    Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (context) => storeproduct(storedata:data),
-    ));
+  void producttostore() async{
+
+    try {
+      var response = await http.post(Uri.encodeFull("http://ojaapi.pythonanywhere.com/addproducttomerchant/"),
+        headers: {
+          "Content-type": "application/json",
+          "Authorization": "Token " + storedata['token']
+        },
+
+        body: jsonEncode({
+
+
+          "category_id": category,
+          "merchant_id": int.parse(storedata['storeid']),
+          "brand": "${brand}",
+          "barcode": "N/A",
+          "name": "${name}",
+          "short_description": "${short_description}",
+          "stock_quantity": stock_quantity,
+          "min_stock_quantity": 2,
+          "weight": weight,
+          "unit": unit,
+          "regular_price": regular_price
+
+        }
+        ),
+      );
+
+      var data = {
+        "token": storedata['token'],
+        "storeid": "${storedata['storeid']}"
+      };
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) => storeproduct(storedata: data),
+      ));
+    }catch(ex){
+      setState(() {
+        error = "${ex}";
+
+      });
+    }
 
   }
+
+
+
 
   List categories;
   String _selected;
@@ -77,7 +98,9 @@ class _addproducttostoreState extends State<addproducttostore> {
   var category;
   void initState() {
     super.initState();
+
     this.getcategory();
+
   }
 
   void getcategory() async{
@@ -93,6 +116,7 @@ class _addproducttostoreState extends State<addproducttostore> {
     setState(() {
       var convertdatatojson = jsonDecode(response.body);
       categories = convertdatatojson;
+
     });
 
   }
@@ -120,7 +144,9 @@ class _addproducttostoreState extends State<addproducttostore> {
         padding: EdgeInsets.all(20.0),
         child:ListView(
           children: <Widget>[
-            Text(""),
+            Center(
+              child:  Text("${error}"),
+            ),
             TypeAheadField(
               textFieldConfiguration: TextFieldConfiguration(
                   autofocus: false,
@@ -137,12 +163,7 @@ class _addproducttostoreState extends State<addproducttostore> {
               suggestionsCallback: (pattern) {
                 List<String> data = List();
                 for (var i in StoreData.stores_product) {
-                  if(data.contains(i['brand'])){
-
-                  }else{
-                    data.add(i['brand']);
-                  }
-
+                  data.add(i['brand']);
                 }
                 data.retainWhere(
                         (s) => s.toLowerCase().contains(pattern.toLowerCase()));
@@ -195,6 +216,8 @@ class _addproducttostoreState extends State<addproducttostore> {
                 ),
               ),
             ),
+
+
             Padding(
               padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 0.0),
               child:   TypeAheadField(
@@ -213,12 +236,7 @@ class _addproducttostoreState extends State<addproducttostore> {
                 suggestionsCallback: (pattern) {
                   List<String> data = List();
                   for (var i in StoreData.stores_product) {
-                    if(data.contains(i['name'])){
-
-                    }else{
-                      data.add(i['name']);
-                    }
-
+                    data.add(i['name']);
                   }
                   data.retainWhere(
                           (s) => s.toLowerCase().contains(pattern.toLowerCase()));
@@ -356,12 +374,13 @@ class _addproducttostoreState extends State<addproducttostore> {
                 vertical: 15.0,
               ),
               child: MaterialButton(
-
                 onPressed: (){
                   brand = this._typeAheadController.text;
                   name = this._productnametypeAheadController.text;
 
-                  addnewproducttostore();
+                  producttostore();
+
+
 
                 },
                 color: Colors.indigoAccent,
@@ -388,3 +407,4 @@ class _addproducttostoreState extends State<addproducttostore> {
     );
   }
 }
+

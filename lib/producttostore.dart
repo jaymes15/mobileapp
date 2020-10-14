@@ -55,7 +55,7 @@ var scanerror = "";
            "name": "${res['name']}",
            "short_description": "${res['short_description']}",
            "stock_quantity": 1,
-           "min_stock_quantity": 1,
+           "min_stock_quantity": 2,
            "weight": res['weight'],
            "unit": res['unit'],
            "regular_price": double.parse(regular_price)

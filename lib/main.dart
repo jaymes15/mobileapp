@@ -40,22 +40,25 @@ class _MyApiState extends State<MyApi> {
         body: jsonEncode({"username": "${username}", "password": "${password}"}),
         headers: {'Content-type': 'application/json'}
     );
-    var response = jsonDecode(res.body);
-    if(response['token'].toString().isNotEmpty && response['expiry'].toString().isNotEmpty){
-      setState(() {
-        token = response['token'].toString();
-        expiry =response['expiry'].toString();
-        error;
-      });
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => store(token:token),
-      ));
-    }else{
 
-      setState(() {
-        error = response['non_field_errors'].toString();
-      });
-    }
+
+
+        var response = jsonDecode(res.body);
+        if(response['token'].toString().isNotEmpty && response['expiry'].toString().isNotEmpty){
+          setState(() {
+            token = response['token'].toString();
+            expiry =response['expiry'].toString();
+            error;
+          });
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => store(token:token),
+          ));
+        }else{
+
+          setState(() {
+            error = response['non_field_errors'].toString();
+          });
+        }
 
 
   }

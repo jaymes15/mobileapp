@@ -1,14 +1,21 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http;
 import 'package:oja_barcode/addproducttostore.dart';
 import 'dart:convert';
 import 'package:oja_barcode/addstore.dart';
 import 'package:oja_barcode/addproduct.dart';
 import 'package:barcode_scan/barcode_scan.dart';
+import 'package:oja_barcode/editproduct.dart';
 import 'package:oja_barcode/producttostore.dart';
 import 'package:oja_barcode/messagepage.dart';
+import 'package:oja_barcode/searchresult.dart';
+import 'package:oja_barcode/storedata.dart';
+import 'bottomsheet.dart';
+import 'categories.dart';
+import 'nullbarcode.dart';
 import 'stores.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
@@ -32,13 +39,34 @@ class _storeproductState extends State<storeproduct> {
   var scanerror;
   var message ="";
 
+
+
   @override
   void initState(){
     super.initState();
     this.getstoreproductdata();
+    this.getallproducts();
   }
 
+  Future<String> getallproducts() async{
+    var response = await http.get("http://ojaapi.pythonanywhere.com/allproducts/",
+      headers: {
+        "Content-type": "application/json"
+      },
 
+    );
+
+//    print(response.body);
+    setState(() {
+      var convertdatatojson = jsonDecode(response.body);
+      var data = convertdatatojson;
+      StoreData.stores_product = data;
+
+
+
+    });
+    return "Success";
+  }
 
 
   Future<String> getstoreproductdata() async{
@@ -133,7 +161,7 @@ class _storeproductState extends State<storeproduct> {
 
   Future<void> deleteproduct(int productid) async{
 
-    var url = "http://ojaapi.pythonanywhere.com/deleteproduct/${productid}";
+    var url = "http://ojaapi.pythonanywhere.com/product/${productid}";
     var response = await http.delete(Uri.encodeFull(url),
       headers: {
         "Content-type": "application/json",
@@ -226,6 +254,21 @@ class _storeproductState extends State<storeproduct> {
                 onTap:  _scanQR,
               ),
               ListTile(
+                leading: Icon(Icons.add),
+                title: Text('Add Product Manually(N/A)',
+                  style: TextStyle(
+                      fontSize: 15.0
+                  ),
+                ),
+                onTap: () {
+                  var data = {"token":storedata['token'],"storeid":"${storedata['storeid']}"};
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => nullbarcode(storedata:data),
+                  ));
+
+                },
+              ),
+              ListTile(
                 leading: Icon(Icons.arrow_back),
                 title: Text('Back To OJA Stores',
                   style: TextStyle(
@@ -235,6 +278,19 @@ class _storeproductState extends State<storeproduct> {
                 onTap:  (){
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (context) => store(token:storedata['token']),
+                  ));
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.category),
+                title: Text('Categories',
+                  style: TextStyle(
+                      fontSize: 15.0
+                  ),
+                ),
+                onTap:(){
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (context) => categories(token:storedata['token']),
                   ));
                 },
               ),
@@ -255,6 +311,33 @@ class _storeproductState extends State<storeproduct> {
 
       ),
       appBar: AppBar(
+        actions: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(right:20.0),
+            child: GestureDetector(
+              onTap: (){
+
+                StoreData.data =  {"token":storedata['token'],"storeid":"${storedata['storeid']}"};
+                showModalBottomSheet(
+                          context: context,
+                          builder:optionsBottomSheet,
+                        );
+              },
+              child: Icon(Icons.add,
+                size:30.0
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right:20.0),
+            child: GestureDetector(
+              onTap: _scanQR,
+              child: Icon(Icons.camera_alt,
+                  size:30.0
+              ),
+            ),
+          )
+        ],
         title: Text(
           "OJA",
           style: TextStyle(
@@ -265,63 +348,125 @@ class _storeproductState extends State<storeproduct> {
         elevation: 30.0,
         backgroundColor: Colors.blue,
       ),
-      body: ListView.builder(
-          itemCount: data == null ? 0 : data.length,
-          itemBuilder: (BuildContext context, int index){
-            return Container(
-              child: Center(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
+      body: Column(
 
+        children: <Widget>[
 
+          TypeAheadField(
+            textFieldConfiguration: TextFieldConfiguration(
+                autofocus: false,
+                style: TextStyle(
+                  fontSize: 20.0,
+                ),
+                decoration: InputDecoration(
+                    hintText: "Search",
+                    border: InputBorder.none,
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                    contentPadding: EdgeInsets.all(15.0)),
+                ),
+            getImmediateSuggestions: false,
+            hideOnEmpty: true,
+            suggestionsCallback: (pattern) {
 
-                      Card(
+              if(pattern.isNotEmpty == true ){
+                List prod = List();
 
+                for (var i = 0; i < data.length;i++){
+                  prod.add(data[i]);
+                }
+                prod.retainWhere(
+                        (s) => s['name'].toLowerCase().contains(pattern.toLowerCase()));
+
+                return prod;
+              }else{
+
+              }
+
+            },
+            itemBuilder: (context, suggestion) {
+              return ListTile(
+                title: Text(suggestion['name']),
+                subtitle: Text(suggestion['barcode']),
+              );
+            },
+            onSuggestionSelected: (suggestion) {
+              var result = {"token":storedata['token'],"product":suggestion};
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => SearchResult(storedata:result),
+              ));
+            },
+          ),
+          Expanded(
+            child: Container(
+              child: ListView.builder(
+                  itemCount: data == null ? 0 : data.length,
+                  itemBuilder: (BuildContext context, int index){
+                    return Container(
+                      child: Center(
                           child: Column(
-                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: <Widget>[
-                              ListTile(
-                                title: Text
-                                  (
-                                    "Product Name:${data[index]['brand']}\nBarcode:${data[index]['barcode']}\nName:${data[index]['name']}\nStock Quantity:${data[index]['stock_quantity']}\nMin Stock Quantity:${data[index]['min_stock_quantity']}\nWeight:${data[index]['weight']}\nUnit:${data[index]['unit']}\nRegular Price:${data[index]['regular_price']}"
-                                ),
 
-                              ),
-                              ButtonBar(
-                                children: <Widget>[
-                                  FlatButton(
-                                    child: const Text('EDIT',
-                                      style:TextStyle(
 
-                                        fontSize: 20.0,
+
+                              Card(
+
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      ListTile(
+                                        title: Text
+                                          (
+                                            "Product Brand:${data[index]['brand']}\nBarcode:${data[index]['barcode']}\nName:${data[index]['name']}\nStock Quantity:${data[index]['stock_quantity']}\nMin Stock Quantity:${data[index]['min_stock_quantity']}\nWeight:${data[index]['weight']}\nUnit:${data[index]['unit']}\nRegular Price:${data[index]['regular_price']}"
+                                        ),
+
                                       ),
-                                    ),
-                                    onPressed: () {/* ... */},
-                                  ),
-                                  FlatButton(
-                                    child: Text('DELETE',
-                                    style:TextStyle(
-                                        color:Colors.red,
-                                      fontSize: 20.0,
-                                    ),
-                                    ),
-                                    onPressed: () {
+                                      ButtonBar(
+                                        children: <Widget>[
+                                          FlatButton(
+                                            child: const Text('EDIT',
+                                              style:TextStyle(
 
-                                      deletealert(data[index]['id']);
-                                      //deleteproduct(data[index]['id']);
-                                    },
-                                  ),
-                                ],
+                                                fontSize: 20.0,
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                             var productdata = {'token':storedata['token'],'product':data[index]};
+                                             print(productdata);
+
+                                              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                                builder: (context) => editproduct(productdata:productdata),
+                                              ));
+                                            },
+                                          ),
+                                          FlatButton(
+                                            child: Text('DELETE',
+                                            style:TextStyle(
+                                                color:Colors.red,
+                                              fontSize: 20.0,
+                                            ),
+                                            ),
+                                            onPressed: () {
+
+                                              deletealert(data[index]['id']);
+                                              //deleteproduct(data[index]['id']);
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  )
                               ),
                             ],
                           )
                       ),
-                    ],
-                  )
+                    );
+                  }
               ),
-            );
-          }
+            ),
+          ),
+        ],
       ),
 
     );

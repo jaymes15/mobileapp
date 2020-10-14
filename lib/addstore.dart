@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:oja_barcode/storedata.dart';
 import 'dart:convert';
 import 'package:oja_barcode/stores.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+
 
 class addstore extends StatefulWidget{
   String token;
@@ -27,11 +31,20 @@ class _addstoreState extends State<addstore> {
   String zip = "";
   String country = "";
   String countrycode = "";
+  var latitude;
+  var longitude;
 var error = "";
   _addstoreState(this.token);
+
+
+  final TextEditingController _typeAheadController = TextEditingController();
+
+
   String url = "http://ojaapi.pythonanywhere.com/getallmerchants/";
 
   Future<String> addnewstoredata() async{
+
+
 
     var response = await http.post(Uri.encodeFull(url),
       headers: {
@@ -39,7 +52,7 @@ var error = "";
         "Authorization": "Token " + token
       },
       body: jsonEncode({
-        "name": "${storename}",
+       "name": "${storename}",
         "email": "${storemail}",
         "phone": "${phonenum}",
         "contact_name": "${contactname}",
@@ -49,6 +62,8 @@ var error = "";
         "zip": "${zip}",
         "country": "${country}",
         "country_code":"${countrycode}",
+        "latitude":"$latitude",
+        "longitude":"$longitude",
         "enabled": "Yes"
       }
       ),
@@ -70,6 +85,10 @@ var error = "";
       error = "Please Fill All Fields";
     });
   }
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,27 +114,79 @@ var error = "";
               child:  Text("Please Fill All Fields"),
             ),
 
-            TextField(
-              autocorrect:true,
-              autofocus:true,
-              onChanged:(_val){
+            TypeAheadField(
+              textFieldConfiguration: TextFieldConfiguration(
+                  autofocus: false,
+                  style: TextStyle(
+                    fontSize:20.0,
 
-                storename = _val;
+                  ),
+                  decoration: InputDecoration(
+                      hintText:"Store Name",
+                      border: InputBorder.none,
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      contentPadding: EdgeInsets.all(15.0)
+                  ),
+                  controller: this._typeAheadController
+              ),
+              suggestionsCallback: (pattern)  {
+                List<String> data = List();
+                for (var i in StoreData.stores_product) {
+                  if(data.contains(i['name'])){
 
+                  }else{
+                    data.add(i['name']);
+                  }
+
+                }
+                data.retainWhere((s) =>   s.toLowerCase().contains(pattern.toLowerCase()));
+
+                return data;
+              },
+              itemBuilder: (context, suggestion) {
+
+
+                return ListTile(
+
+                  title: Text(suggestion),
+
+                );
+              },
+              onSuggestionSelected: (suggestion) {
+                this._typeAheadController.text = suggestion;
+                storename = this._typeAheadController.text;
 
               },
-              style: TextStyle(
-                fontSize:20.0,
-              ),
-              decoration: InputDecoration(
-                  hintText:"Store Name",
-                  border: InputBorder.none,
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  contentPadding: EdgeInsets.all(15.0)
-              ),
-
             ),
+
+
+
+
+
+//            TextField(
+//
+//
+//              autocorrect:true,
+//              autofocus:true,
+//              onChanged:(_val){
+//
+//                storename = _val;
+//
+//
+//              },
+//              style: TextStyle(
+//                fontSize:20.0,
+//              ),
+//              decoration: InputDecoration(
+//                  hintText:"Store Name",
+//                  border: InputBorder.none,
+//                  filled: true,
+//                  fillColor: Colors.grey[200],
+//                  contentPadding: EdgeInsets.all(15.0)
+//              ),
+//
+//            ),
             Padding(
               padding: EdgeInsets.symmetric(
                   vertical: 15.0,
@@ -376,11 +447,20 @@ var error = "";
                 vertical: 15.0,
               ),
               child: MaterialButton(
-                onPressed: (){
+                onPressed: () async{
+                  storename = this._typeAheadController.text;
+                  print(storename);
+
                   if (
                   country.isNotEmpty && countrycode.isNotEmpty && zip.isNotEmpty && storename.isNotEmpty && storemail.isNotEmpty && country.isNotEmpty && countrycode.isNotEmpty && zip.isNotEmpty && phonenum.isNotEmpty && state.isNotEmpty
                   ) {
-                    addnewstoredata();
+                    final query = address;
+                    var addresses = await Geocoder.local.findAddressesFromQuery(query);
+                    var first = addresses.first;
+                    latitude = first.coordinates.latitude;
+                    longitude = first.coordinates.longitude;
+
+                   addnewstoredata();
                   }else{
 
 

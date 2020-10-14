@@ -3,25 +3,27 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:oja_barcode/addstore.dart';
-import 'package:oja_barcode/editstore.dart';
+import 'package:oja_barcode/editcategory.dart';
 import 'package:oja_barcode/storedata.dart';
 import 'package:oja_barcode/storeproduct.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
+import 'addcategory.dart';
 
-class store extends StatefulWidget{
+
+class categories extends StatefulWidget{
   String token;
-  store({ Key key,@required this.token}) : super(key : key);
+  categories({ Key key,@required this.token}) : super(key : key);
   @override
-  _storeState createState() => _storeState(token);
+  _categoriesState createState() => _categoriesState(token);
 
 }
 
 
-class _storeState extends State<store> {
+class _categoriesState extends State<categories> {
   String token;
 
-  _storeState(this.token);
+  _categoriesState(this.token);
   String url = "http://ojaapi.pythonanywhere.com/getallmerchants/";
 
   List data;
@@ -29,37 +31,11 @@ class _storeState extends State<store> {
   @override
   void initState(){
     super.initState();
-    this.getjsondata();
-    this.getallproducts();
+    this.getcategory();
   }
 
-
-  Future<String> getallproducts() async{
-    var response = await http.get("http://ojaapi.pythonanywhere.com/allproducts/",
-      headers: {
-        "Content-type": "application/json"
-      },
-
-    );
-
-//    print(response.body);
-    setState(() {
-      var convertdatatojson = jsonDecode(response.body);
-      var data = convertdatatojson;
-      StoreData.stores_product = data;
-
-
-
-    });
-    return "Success";
-  }
-
-
-
-
-
-
-  Future<String> getjsondata() async{
+  void getcategory() async{
+    String url = "http://ojaapi.pythonanywhere.com/getallcategory/";
     var response = await http.get(Uri.encodeFull(url),
       headers: {
         "Content-type": "application/json",
@@ -68,43 +44,41 @@ class _storeState extends State<store> {
 
     );
 
-//    print(response.body);
     setState(() {
       var convertdatatojson = jsonDecode(response.body);
       data = convertdatatojson;
-      StoreData.stores_data = data;
-
+      StoreData.categories = data;
 
     });
-    return "Success";
-  }
 
+  }
   void deletealert(int storeid){
     _onDeleteAlertPressed(context,storeid);
   }
 
-  Future<void> deleteproduct(int storeid) async{
+  Future<void> deletecategory(int categoryid) async{
 
-    var url = "http://ojaapi.pythonanywhere.com/getmerchant/${storeid}";
+    var url = "http://ojaapi.pythonanywhere.com/getcategories/${categoryid}";
     var response = await http.delete(Uri.encodeFull(url),
       headers: {
         "Content-type": "application/json",
         "Authorization": "Token " + token
       },
     );
-    getjsondata();
+    getcategory();
+
     Navigator.pop(context);
 
   }
 
 
-  _onDeleteAlertPressed(context,int storeid) {
+  _onDeleteAlertPressed(context,int categoryid) {
 
 
     Alert(
       context: context,
       title: "OJA",
-      desc: "Are You Sure You Want To Delete This Store.",
+      desc: "Are You Sure You Want To Delete This Category.",
       buttons: [
         DialogButton(
           child: Text(
@@ -121,7 +95,7 @@ class _storeState extends State<store> {
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
           onPressed: () async{
-            deleteproduct(storeid);
+            deletecategory(categoryid);
           },
           width: 120,
         )
@@ -137,7 +111,7 @@ class _storeState extends State<store> {
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(
         title: Text(
-          "OJA",
+          "OJA Categories",
           style: TextStyle(
             fontSize: 20.0,
           ),
@@ -149,7 +123,7 @@ class _storeState extends State<store> {
           IconButton(
             onPressed: (){
               Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => addstore(token:token),
+                builder: (context) => addcategory(token:token),
               ));
 
             },
@@ -170,12 +144,10 @@ class _storeState extends State<store> {
 
                       GestureDetector(
                         onTap:(){
-                                                var storedata = {"token":token,"storeid":"${data[index]['id']}"};
-                                                Navigator.of(context).push(MaterialPageRoute(
-                                                  builder: (context) => storeproduct(storedata:storedata),
-                                                ));
 
-                                              },
+
+
+                        },
                         child: Card(
 
                             child: Column(
@@ -200,11 +172,11 @@ class _storeState extends State<store> {
                                         ),
                                       ),
                                       onPressed: () {
-                                        var storedata = {'token':token,'store':data[index]};
+                                        var categorydata = {'token':token,'category':data[index]};
 
 
                                         Navigator.of(context).push(MaterialPageRoute(
-                                          builder: (context) => editstore(storedata:storedata),
+                                          builder: (context) => editcategory(categorydata:categorydata),
                                         ));
                                       },
                                     ),
@@ -237,11 +209,3 @@ class _storeState extends State<store> {
 }
 
 
-//child:Text(data[index]['name']),
-//onTap:(){
-//                            var storedata = {"token":token,"storeid":"${data[index]['id']}"};
-//                            Navigator.of(context).push(MaterialPageRoute(
-//                              builder: (context) => storeproduct(storedata:storedata),
-//                            ));
-//
-//                          },
